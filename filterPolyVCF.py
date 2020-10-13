@@ -42,8 +42,8 @@ def main():
 						this_loc=fields[0]
 						loc_snps=list()
 						
-				ref=get_index(fields[3].split(","))
-				alt=get_index(fields[4].split(","))
+				ref=fields[3].split(",")
+				alt=fields[4].split(",")
 				
 				#if biallelic filter on and site has >2 alleles, skip
 				if params.biallelic == True:
@@ -55,28 +55,30 @@ def main():
 					info=parseINFO(fields[7])
 				
 					#filter on HH
-					if filter.minH:
+					if params.minH:
 						if "HH" in info.keys():
 							if info["HH"] < params.minH:
 								continue #skip locus
 						else:
 							print("ERROR: Key \"HH\" not in INFO field")
+							print(info)
 							sys.exit()
-					if filter.maxH:
+					if params.maxH:
 						if "HH" in info.keys():
 							if info["HH"] > params.maxH:
 								continue #skip locus
 						else:
 							print("ERROR: Key \"HH\" not in INFO field")
+							print(info)
 							sys.exit()
-					if filter.minC:
+					if params.minC:
 						if "NS" in info.keys():
 							if info["NS"] < params.minC:
 								continue #skip locus
 						else:
 							print("ERROR: Key \"NS\" not in INFO field")
 							sys.exit()
-					if filter.minD:
+					if params.minD:
 						if "DP" in info.keys():
 							if info["DP"] < params.minD:
 								continue #skip locus
@@ -103,15 +105,15 @@ def getPloidies(samples):
 	for s in samples:
 		p=len((s.split(":")[0]).split("/"))
 		ploidies.append(p)
-	return(p)
+	return(ploidies)
 		
 
 def parseINFO(info):
 	d=dict()
-	l=info.split(":")
+	l=info.split(";")
 	for f in l:
 		fl=f.split("=")
-		d[fl[0]]=fl[1]
+		d[fl[0]]=float(fl[1])
 	return(d)
 
 #Object to parse command-line arguments
@@ -198,7 +200,7 @@ class parseArgs():
 		if message is not None:
 			print()
 			print (message)
-		print ("\nfilterHHvcf.py\n")
+		print ("\nfilterPolyVCF.py\n")
 		print("Author: Tyler K Chafin, University of Arkansas")
 		print ("Contact: tkchafin@uark.edu")
 		print ("Description:Filters the VCF file produced by polyRAD's RADdata2VCF() function")

@@ -116,8 +116,6 @@ def main():
 
 def writeReport(r):
 	print("\n-----------------------------\nfilterPolyVCF Report:")
-	print("\tTotal VCF records before filtering:",r["total"])
-	print("\tTotal VCF records after filtering:",r["kept"])
 	if r["rand"]:
 		print("\tRecords removed by random filter (-r):",r["rand"])
 	if r["bi"]:
@@ -134,6 +132,9 @@ def writeReport(r):
 		print("\tRecords removed by min ploidy filter (-p):",r["minP"])
 	if r["maxP"]:
 		print("\tRecords removed by max ploidy filter (-P):",r["maxP"])
+
+	print("\n\tTotal VCF records before filtering:",r["total"])
+	print("\tTotal VCF records after filtering:",r["kept"])
 	print("-----------------------------\n")
 
 def initReport():

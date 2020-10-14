@@ -233,7 +233,7 @@ class parseArgs():
 
 		#Check manditory options are set
 		if not self.vcf:
-			self.display_help("Need an ipyrad VCF file")
+			self.display_help("Need a VCF file")
 		if self.maxP and self.minP > self.maxP:
 			self.display_help("-p can't be greater than -P")
 		if self.maxH < self.minH:

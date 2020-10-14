@@ -9,10 +9,10 @@ def main():
 	params = parseArgs()
 	
 	f = open(params.out, 'w')
-	
 	with open(params.vcf, "r") as vcf:
 		this_loc=None
 		loc_snps=list()
+		r=initReport()
 		for line in vcf:
 			line=line.strip()
 			#directly transfer header lines
@@ -20,6 +20,7 @@ def main():
 				f.write(line)
 				f.write("\n")
 			else:
+				r["total"]+=1
 				fields=line.split("\t")
 				if not this_loc:
 					this_loc=fields[0]
@@ -31,13 +32,17 @@ def main():
 							if len(this_loc)>1:
 								f.write("\t".join(random.choice(this_loc)))
 								f.write("\n")
+								r["kept"]+=1
+								r["rand"]+=(len(this_loc)-1)
 							else:
 								f.write("\t".join(this_loc[0]))
 								f.write("\n")
+								r["kept"]+=1
 						else:
 							for s in loc_snps:
 								f.write("\t".join(s))
 								f.write("\n")
+								r["kept"]+=1
 						#clear locus data
 						this_loc=fields[0]
 						loc_snps=list()
@@ -48,6 +53,7 @@ def main():
 				#if biallelic filter on and site has >2 alleles, skip
 				if params.biallelic == True:
 					if (len(ref) + len(alt) > 2):
+						r["bi"]+=1
 						continue
 		
 				#grab info fields if field filters are turned on
@@ -58,6 +64,7 @@ def main():
 					if params.minH:
 						if "HH" in info.keys():
 							if info["HH"] < params.minH:
+								r["minH"]+=1
 								continue #skip locus
 						else:
 							print("ERROR: Key \"HH\" not in INFO field")
@@ -66,6 +73,7 @@ def main():
 					if params.maxH:
 						if "HH" in info.keys():
 							if info["HH"] > params.maxH:
+								r["maxH"]+=1
 								continue #skip locus
 						else:
 							print("ERROR: Key \"HH\" not in INFO field")
@@ -74,6 +82,7 @@ def main():
 					if params.minC:
 						if "NS" in info.keys():
 							if info["NS"] < params.minC:
+								r["minC"]+=1
 								continue #skip locus
 						else:
 							print("ERROR: Key \"NS\" not in INFO field")
@@ -81,6 +90,7 @@ def main():
 					if params.minD:
 						if "DP" in info.keys():
 							if info["DP"] < params.minD:
+								r["minD"]+=1
 								continue #skip locus
 						else:
 							print("ERROR: Key \"DP\" not in INFO field")
@@ -90,15 +100,54 @@ def main():
 					minP=min(p)
 					maxP=max(p)
 					if params.minP and minP < params.minP:
+						r["minP"]+=1
 						continue
 					if params.maxP and maxP > params.maxP:
+						r["maxP"]+=1
 						continue
 				
 				#if all passed, append to locus list
 				loc_snps.append(fields)
-
+		
+		writeReport(r)
 		vcf.close()
 	f.close()
+
+def writeReport(r):
+	print("\n-----------------------------\nfilterPolyVCF Report:")
+	print("\tTotal VCF records before filtering:",r["total"])
+	print("\tTotal VCF records after filtering:",r["kept"])
+	if r["rand"]:
+		print("\tRecords removed by random filter (-r):",r["rand"])
+	if r["bi"]:
+		print("\tRecords removed by biallelic filter (-b):",r["bi"])
+	if r["minH"]:
+		print("\tRecords removed by min Hind/He filter (-m):",r["minH"])
+	if r["maxH"]:
+		print("\tRecords removed by max Hind/He filter (-M):",r["maxH"])
+	if r["minD"]:
+		print("\tRecords removed by min DP filter (-d):",r["minD"])
+	if r["minC"]:
+		print("\tRecords removed by min genotyped/NS filter (-c):",r["minC"])
+	if r["minP"]:
+		print("\tRecords removed by min ploidy filter (-p):",r["minP"])
+	if r["maxP"]:
+		print("\tRecords removed by max ploidy filter (-P):",r["maxP"])
+	print()
+
+def initReport():
+	r=dict()
+	r["total"]=0
+	r["kept"]=0
+	r["minP"]=0
+	r["maxP"]=0
+	r["minH"]=0
+	r["maxH"]=0
+	r["minC"]=0
+	r["minD"]=0
+	r["bi"]=0
+	r["rand"]=0
+	return(r)
 
 def getPloidies(samples):
 	ploidies=list()

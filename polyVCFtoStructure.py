@@ -7,22 +7,90 @@ import getopt
 def main():
 	params = parseArgs()
 	
-	f = open(params.out, 'w')
+	if params.popmap:
+		popmap = parsePopmap(params.popmap)
 	
+	#parse VCF
 	with open(params.vcf, "r") as vcf:
 		last_header=None
+		max_ploidy=0
+		sample_names=None
+		data=list()
 		for line in vcf:
 			line=line.strip()
+			if len(line) == 0:
+				continue
 			#skip headers
 			if line[0] == "#":
 				last_header=line.split("\t")
 				continue
 			else:
+				if not sample_names:
+					sample_names = last_header[9:]
 				fields=line.split("\t")
-
+				
+				#check if sample ploidy is higher
+				p=max(getPloidies(fields[9:]))
+				if p > max_ploidy:
+					max_ploidy=p
+				
+				#add sample data to list
+				data.append(fields[9:])
 		vcf.close()
+
+	#write output structure
+	f.open(params.out, "w")
+	for i, sample in sample_names:
+		base= list()
+		base.append(name)
+		if params.popmap:
+			if name in popmap.keys():
+				base.append(popmap[name])
+			else:
+				print("Sample",name,"not in popmap. Skipping.")
+		if params.extracols:
+			for c in range(1, params.extracols):
+				base.append("")
+		olines=list()
+		for a in range(1, max_ploidy):
+			oline.append(base)
+		for loc in data:
+			sample_loc = data[i]
+			
 	f.close()
 
+#function reads a tab-delimited popmap file and return dictionary of assignments
+def parsePopmap(popmap):
+
+	ret = dict()
+	if os.path.exists(popmap):
+		with open(popmap, 'r') as fh:
+			try:
+				contig = ""
+				seq = ""
+				for line in fh:
+					line = line.strip()
+					if not line:
+						continue
+					else:
+						stuff = line.split()
+						ret[stuff[0]] = stuff[1]
+				return(ret)
+			except IOError:
+				print("Could not read file ",pairs)
+				sys.exit(1)
+			finally:
+				fh.close()
+	else:
+		raise FileNotFoundError("File %s not found!"%popmap)
+
+
+def getPloidies(samples):
+	ploidies=list()
+	for s in samples:
+		p=len((s.split(":")[0]).split("/"))
+		ploidies.append(p)
+	return(ploidies)
 
 #Object to parse command-line arguments
 class parseArgs():
@@ -85,7 +153,7 @@ class parseArgs():
 		-v	: VCF input file formatted by polyRAD
 		-p	: (Optional) popmap file with pop labels
 		-x	: (Optional) number of extra (blank) columns to add
-\		-o	: Output file name (default=polyrad.vcf)
+		-o	: Output file name (default=polyrad.vcf)
 """)
 		print()
 		sys.exit()

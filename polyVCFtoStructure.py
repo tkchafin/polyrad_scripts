@@ -39,25 +39,36 @@ def main():
 		vcf.close()
 
 	#write output structure
-	f.open(params.out, "w")
-	for i, sample in sample_names:
-		base= list()
-		base.append(name)
-		if params.popmap:
-			if name in popmap.keys():
-				base.append(popmap[name])
-			else:
-				print("Sample",name,"not in popmap. Skipping.")
-		if params.extracols:
-			for c in range(1, params.extracols):
-				base.append("")
-		olines=list()
-		for a in range(1, max_ploidy):
-			oline.append(base)
-		for loc in data:
-			sample_loc = data[i]
-			
-	f.close()
+	with open(params.out, "w") as f:
+		for i, sample in enumerate(sample_names):
+			base= list()
+			base.append(sample)
+			if params.popmap:
+				if sample in popmap.keys():
+					base.append(popmap[sample])
+				else:
+					print("Sample",sample,"not in popmap. Skipping.")
+					continue
+			if params.extracols:
+				for c in range(1, params.extracols):
+					base.append("")
+			olines=list()
+			for a in range(1, max_ploidy):
+				olines.append(base)
+			for loc in data:
+				print(data[i])
+				sample_loc = (data[i]).split("/")
+				for a in range(1, max_ploidy):
+					index=a-1
+					if a > len(sample_loc):
+						olines[index].append(-9)
+					else:
+						olines[index].append(sample_loc[index])
+				sys.exit()
+			for o in olines:
+				f.write(o)
+				f.write("\n")
+		f.close()
 
 #function reads a tab-delimited popmap file and return dictionary of assignments
 def parsePopmap(popmap):

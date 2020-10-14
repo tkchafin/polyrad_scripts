@@ -21,14 +21,33 @@ Description:Converts the ipyrad VCF to a format usable for polyRAD
 ```
 NOTE: If using ipyrad for processing RAD data prior to genotyping in polyRAD, be sure to relax the parameters in ipyrad aimed at removing merged paralogs (i.e. max shared heterozygosity and max alleles per individual), otherwise these will not be present in the output VCF file!
 
-## filterHHvcf.py
+## filterPolyVCF.py
 
-Filtering the VCF file output by polyRAD's RADdata2VCF() function using the Hind/He statistic (make sure to set hinde=TRUE in RADdata2VCF)
+Filtering loci in the VCF file output by polyRAD's RADdata2VCF() function by individual coverage, ploidy, or the Hind/He statistic (make sure to set hinde=TRUE in RADdata2VCF)
 
 ```
-./filterHHvcf.py -h
-Coming soon
+./filterPolyVCF.py -h
+
+filterPolyVCF.py
+
+Author: Tyler K Chafin, University of Arkansas
+Contact: tkchafin@uark.edu
+Description:Filters the VCF file produced by polyRAD's RADdata2VCF() function
+
+	Arguments:
+		-v	: VCF file
+		-b	: (Boolean) Toggle to only retain [default=off]
+		-c	: Mimumum number of samples genotyped (NS) [default=None]
+		-p	: Minimum allowable ploidy per locus [default=None]
+		-P	: Maximum allowable ploidy per locus [default=None]
+		-m	: Minimum HindHe/ HH value [default=None]
+		-M	: Maximum HindHe/ HH value [default=None]
+		-r	: (Boolean) Randomly sample 1 SNP per locus [default=off]
+		-d	: Minimum DP [default=None]
+		-o	: Output file name (default=polyrad.vcf)
 ```
+
+Note that this script assumes that genotypes start after exactly 8 columns: CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT
 
 ## polyVCFtoStructure.py 
 
@@ -55,6 +74,19 @@ Indiv3  -9 1 1 -9 -9
 As with all scripts in this directory, options can be seen by calling the program with '-h':
 ```
 ./polyVCFtoStructure.py -h
-Coming soon
+
+polyVCFtoStructure.py
+
+Author: Tyler K Chafin, University of Arkansas
+Contact: tkchafin@uark.edu
+Description: Converts polyRAD VCF to Structure (.str)
+
+		-v	: VCF input file formatted by polyRAD
+		-p	: (Optional) popmap file with pop labels
+		-x	: (Optional) number of extra (blank) columns to add
+		-o	: Output file name (default=polyrad.vcf)
+
 ```
+
+Note that this script assumes that genotypes start after exactly 8 columns: CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT
 

@@ -29,13 +29,14 @@ def main():
 						#submit locus here
 						if params.random:
 							#randomly select a SNP to write
-							if len(this_loc)>1:
-								f.write("\t".join(random.choice(this_loc)))
+							if len(loc_snps)>1:
+								#print(len(loc_snps))
+								f.write("\t".join(random.choice(loc_snps)))
 								f.write("\n")
 								r["kept"]+=1
-								r["rand"]+=(len(this_loc)-1)
-							else:
-								f.write("\t".join(this_loc[0]))
+								r["rand"]+=(len(loc_snps)-1)
+							elif len(loc_snps) > 0:
+								f.write("\t".join(loc_snps[0]))
 								f.write("\n")
 								r["kept"]+=1
 						else:
@@ -133,7 +134,7 @@ def writeReport(r):
 		print("\tRecords removed by min ploidy filter (-p):",r["minP"])
 	if r["maxP"]:
 		print("\tRecords removed by max ploidy filter (-P):",r["maxP"])
-	print()
+	print("-----------------------------\n")
 
 def initReport():
 	r=dict()
@@ -228,6 +229,8 @@ class parseArgs():
 			elif opt=="d":
 				self.minD=int(arg)
 				self.noFilter=False
+			elif opt=="r":
+				self.random=True
 			else:
 				assert False, "Unhandled option %r"%opt
 

@@ -53,21 +53,25 @@ def main():
 				for c in range(1, params.extracols):
 					base.append("")
 			olines=list()
-			for a in range(1, max_ploidy):
-				olines.append(base)
+			for a in range(0, max_ploidy):
+				olines.append(base.copy())
 			for loc in data:
-				print(data[i])
-				sample_loc = (data[i]).split("/")
-				for a in range(1, max_ploidy):
-					index=a-1
-					if a > len(sample_loc):
-						olines[index].append(-9)
-					else:
-						olines[index].append(sample_loc[index])
-				sys.exit()
+				sample_loc = (loc[i].split(':')[0]).split("/")
+				filled=0
+				for index, allele in enumerate(sample_loc):
+					olines[index].append(str(allele))
+					filled+=1
+				#if filled < max_ploidy:
+					#print("sample", sample, "--",filled, "less than",max_ploidy)
+				for missing_index in range(filled, max_ploidy):
+					#print("-9")
+					olines[missing_index].append("-9")
+				
 			for o in olines:
-				f.write(o)
+				#print("\t".join(o))
+				f.write("\t".join(o))
 				f.write("\n")
+			#sys.exit()
 		f.close()
 
 #function reads a tab-delimited popmap file and return dictionary of assignments

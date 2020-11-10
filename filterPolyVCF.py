@@ -260,7 +260,7 @@ class parseArgs():
 		print("""
 	Arguments:
 		-v	: VCF file
-		-b	: (Boolean) Toggle to only retain [default=off]
+		-b	: (Boolean) Toggle to only retain bi-allelic loci [default=off]
 		-c	: Mimumum number of samples genotyped (NS) [default=None]
 		-p	: Minimum allowable ploidy per locus [default=None]
 		-P	: Maximum allowable ploidy per locus [default=None]

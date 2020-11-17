@@ -124,7 +124,9 @@ def main():
 
 def filterGenotypes(geno, depth):
 	index=10
+	print(geno)
 	for g in geno[9:]:
+		print(g)
 		stuff=g.split(":")
 		ploidy=len(stuff[0].split("/"))
 		if int(stuff[-1]) < depth:

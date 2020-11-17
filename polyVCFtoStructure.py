@@ -9,6 +9,7 @@ def main():
 	
 	if params.popmap:
 		popmap = parsePopmap(params.popmap)
+		popID = numberPops(popmap)
 	
 	#parse VCF
 	with open(params.vcf, "r") as vcf:
@@ -45,7 +46,7 @@ def main():
 			base.append(sample)
 			if params.popmap:
 				if sample in popmap.keys():
-					base.append(popmap[sample])
+					base.append(popID[popmap[sample]])
 				else:
 					print("Sample",sample,"not in popmap. Skipping.")
 					continue
@@ -73,6 +74,15 @@ def main():
 				f.write("\n")
 			#sys.exit()
 		f.close()
+
+def numberPops(popmap):
+	popID=dict()
+	index=0
+	for pop in popmap.keys():
+		if pop not in popID.keys():
+			popID[pop]=index
+			index+=1
+	return(popID)
 
 #function reads a tab-delimited popmap file and return dictionary of assignments
 def parsePopmap(popmap):

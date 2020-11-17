@@ -31,16 +31,24 @@ def main():
 							#randomly select a SNP to write
 							if len(loc_snps)>1:
 								#print(len(loc_snps))
-								f.write("\t".join(random.choice(loc_snps)))
+								keep=random.choice(loc_snps)
+								if params.minIndD and params.minIndD >0:
+									keep=filterGenotypes(keep, params.minIndD)
+								f.write("\t".join(keep))
 								f.write("\n")
 								r["kept"]+=1
 								r["rand"]+=(len(loc_snps)-1)
 							elif len(loc_snps) > 0:
-								f.write("\t".join(loc_snps[0]))
+								keep=loc_snps[0]
+								if params.minIndD and params.minIndD >0:
+									keep=filterGenotypes(keep, params.minIndD)
+								f.write("\t".join(keep))
 								f.write("\n")
 								r["kept"]+=1
 						else:
 							for s in loc_snps:
+								if params.minIndD and params.minIndD >0:
+									s=filterGenotypes(s, params.minIndD)
 								f.write("\t".join(s))
 								f.write("\n")
 								r["kept"]+=1
@@ -114,6 +122,16 @@ def main():
 		vcf.close()
 	f.close()
 
+def filterGenotypes(geno, depth):
+	index=10
+	for g in geno[9:]:
+		stuff=g.split(":")
+		ploidy=len(stuff[0].split("/"))
+		if stuff[-1] < depth:
+			new_geno=["-"]*ploidy
+			geno[index]="/".join(new_geno)
+		index+=1
+
 def writeReport(r):
 	print("\n-----------------------------\nfilterPolyVCF Report:")
 	if r["rand"]:
@@ -172,7 +190,7 @@ class parseArgs():
 	def __init__(self):
 		#Define options
 		try:
-			options, remainder = getopt.getopt(sys.argv[1:], 'hv:o:bc:p:P:m:M:rd:', \
+			options, remainder = getopt.getopt(sys.argv[1:], 'hv:o:bc:p:P:m:M:rd:D:I', \
 			["help"])
 		except getopt.GetoptError as err:
 			print(err)
@@ -190,7 +208,11 @@ class parseArgs():
 		self.random=False
 		self.noFilter=True
 		self.minD=None
-
+		
+		self.minIndD=None
+		self.minIndCov=None
+		self.indFilter=False
+		
 		#First pass to see if help menu was called
 		for o, a in options:
 			if o in ("-h", "-help", "--help"):
@@ -227,11 +249,14 @@ class parseArgs():
 			elif opt=="c":
 				self.noFilter=False
 				self.minC=int(arg)
-			elif opt=="d":
+			elif opt=="D":
 				self.minD=int(arg)
 				self.noFilter=False
 			elif opt=="r":
 				self.random=True
+			elif opt=="d":
+				self.minIndD=int(arg)
+				self.indFilter=True
 			else:
 				assert False, "Unhandled option %r"%opt
 
@@ -260,14 +285,15 @@ class parseArgs():
 		print("""
 	Arguments:
 		-v	: VCF file
-		-b	: (Boolean) Toggle to only retain bi-allelic loci [default=off]
+		-b	: (Boolean) Toggle to only retain bi-allelic [default=off]
 		-c	: Mimumum number of samples genotyped (NS) [default=None]
 		-p	: Minimum allowable ploidy per locus [default=None]
 		-P	: Maximum allowable ploidy per locus [default=None]
 		-m	: Minimum HindHe/ HH value [default=None]
 		-M	: Maximum HindHe/ HH value [default=None]
 		-r	: (Boolean) Randomly sample 1 SNP per locus [default=off]
-		-d	: Minimum DP [default=None]
+		-D	: Minimum global DP [default=None]
+		-d	: Minimum individual DP to call a genotype (otherwise -/-) [default=0]
 		-o	: Output file name (default=polyrad.vcf)
 """)
 		print()

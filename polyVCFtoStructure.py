@@ -46,7 +46,7 @@ def main():
 			base.append(sample)
 			if params.popmap:
 				if sample in popmap.keys():
-					base.append(popID[popmap[sample]])
+					base.append(str(popID[popmap[sample]]))
 				else:
 					print("Sample",sample,"not in popmap. Skipping.")
 					continue

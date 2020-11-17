@@ -59,7 +59,7 @@ def main():
 			for loc in data:
 				sample_loc = (loc[i].split(':')[0]).split("/")
 				if params.minIndD:
-					dp=int(loc[i].split(":")[-9])
+					dp=int(loc[i].split(":")[-1])
 					if dp < params.minIndD:
 						new=["-9"]*len(sample_loc)
 						sample_loc=new

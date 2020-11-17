@@ -127,7 +127,7 @@ def filterGenotypes(geno, depth):
 	for g in geno[9:]:
 		stuff=g.split(":")
 		ploidy=len(stuff[0].split("/"))
-		if stuff[-1] < depth:
+		if int(stuff[-1]) < depth:
 			new_geno=["-"]*ploidy
 			geno[index]="/".join(new_geno)
 		index+=1

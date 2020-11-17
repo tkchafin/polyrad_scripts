@@ -58,6 +58,11 @@ def main():
 				olines.append(base.copy())
 			for loc in data:
 				sample_loc = (loc[i].split(':')[0]).split("/")
+				if params.minIndD:
+					dp=int(loc[i].split(":")[-9])
+					if dp < params.minIndD:
+						new=["-9"]*len(sample_loc)
+						sample_loc=new
 				filled=0
 				for index, allele in enumerate(sample_loc):
 					olines[index].append(str(allele))
@@ -122,7 +127,7 @@ class parseArgs():
 	def __init__(self):
 		#Define options
 		try:
-			options, remainder = getopt.getopt(sys.argv[1:], 'hv:o:p:x:', \
+			options, remainder = getopt.getopt(sys.argv[1:], 'hv:o:p:x:d:', \
 			["help"])
 		except getopt.GetoptError as err:
 			print(err)
@@ -134,6 +139,7 @@ class parseArgs():
 		self.popmap=None
 		self.extracols=0
 		self.locnames=False
+		self.minIndD=None
 
 
 		#First pass to see if help menu was called
@@ -157,6 +163,8 @@ class parseArgs():
 				self.popmap=arg
 			elif opt=="x":
 				self.extracols=int(arg)
+			elif opt=="d":
+				self.minIndD=int(arg)
 			else:
 				assert False, "Unhandled option %r"%opt
 
@@ -178,6 +186,8 @@ class parseArgs():
 		-v	: VCF input file formatted by polyRAD
 		-p	: (Optional) popmap file with pop labels
 		-x	: (Optional) number of extra (blank) columns to add
+		-d	: Minimum individual DP to keep genotype for locus [default=0]
+			  NOTE: Genotypes called as e.g. "-/-" will also be treated as missing
 		-o	: Output file name (default=polyrad.vcf)
 """)
 		print()

@@ -78,7 +78,7 @@ def main():
 def numberPops(popmap):
 	popID=dict()
 	index=0
-	for pop in map(list(popmap.values())):
+	for pop in popmap.values():
 		if pop not in popID.keys():
 			popID[pop]=index
 			index+=1

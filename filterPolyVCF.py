@@ -123,7 +123,7 @@ def main():
 	f.close()
 
 def filterGenotypes(geno, depth):
-	index=10
+	index=9
 	print(geno)
 	for g in geno[9:]:
 		print(g)

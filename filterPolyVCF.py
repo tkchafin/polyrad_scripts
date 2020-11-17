@@ -133,6 +133,7 @@ def filterGenotypes(geno, depth):
 			new_geno= ["-" for i in range(1,ploidy)]
 			geno[index]="/".join(new_geno)
 		index+=1
+	return(geno)
 
 def writeReport(r):
 	print("\n-----------------------------\nfilterPolyVCF Report:")

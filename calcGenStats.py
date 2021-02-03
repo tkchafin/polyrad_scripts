@@ -22,6 +22,9 @@ def main():
 	rnd=list()
 	gpst=list()
 	jost=list()
+	HE1=list()
+	HE2=list()
+	HT=list()
 	isMon=list()
 	isBi=list()
 	
@@ -89,6 +92,10 @@ def main():
 				D=ps.JostD(pi["pop1"], pi["pop2"])
 				#print("D:",D)
 				
+				he1=ps.polyHe(pi["pop1"])
+				he2=ps.polyHe(pi["pop2"])
+				ht=ps.getHt(pi["pop1"], pi["pop2"])
+				
 				name.append(locus)
 				pos.append(position)
 				gpst.append(Gst)
@@ -99,10 +106,14 @@ def main():
 				dxo.append(Dxo)
 				dyo.append(Dyo)
 				rnd.append(RND)
+				HE1.append(he1)
+				HE2.append(he2)
+				HT.appent(ht)
 		vcf.close()
 	stuff = {'Locus': name, 'Position': pos, 'Gst': gpst,
 	'JostD': jost, 'Dxy': dxy, 'Dxo': dxo, 'Dyo': dyo,
-	'RND': rnd, 'Monomorphic':isMon, 'Biallelic':isBi}
+	'RND': rnd, 'He1': HE1, 'He2': HE2, 'Ht':HT,
+	 'Monomorphic':isMon, 'Biallelic':isBi}
 	df = pd.DataFrame(stuff)
 	print(df)
 	df.to_csv(params.oname, sep="\t", header=True, index=False)  

@@ -90,3 +90,34 @@ Description: Converts polyRAD VCF to Structure (.str)
 
 Note that this script assumes that genotypes start after exactly 8 columns: CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT
 
+## calcGenStats.py 
+
+This script calculates several measures of genetic differentiation that are appropriate for mixed ploidy data, as summarized in Meirmans et al. 2018. 
+
+To view the help menu, use <-h> as with the other scripts:
+```
+No VCF file provided.
+
+calGenStats.py
+
+Author: Tyler K Chafin, University of Arkansas
+Contact: tkchafin@uark.edu
+Description: Calculated RNDmin, Dxy, and lnRH from a polyVCF
+
+		-v,--vcf	: Input polyVCF file 
+		-p,--popmap	: Tab-delimitation population map file
+		-1,--pop1	: Identifier for population 1 
+			NOTE: multiple can be separated by + (e.g. popA+popB)
+		-2,--pop2	: Identifier for population 2
+		-3,--pop3	: (Optional) outgroup for RND
+		-o,--oname	: Output file name [default=out.tsv]
+			If no outgroups provided, script will use all other samples for RND
+```
+
+Measures that the program calculates:
+- Dxy, calculated as Pi(x)*(1-Pi(y)) + Pi(y)*(1-Pi(x)), where Pi(x) and (y) are the allele frequency of the reference allele in both populations. Warning: This assumes markers are biallelic 
+- RND, calculated as Dxy/(1/2*(Dxo+Dxy)), or Dxy divided by the mean distance of popx (Pop1) and popy (Pop2) to the outgroup 
+- Jost's D, calculated in terms of gene diversity (He; see below and also Meirmans et al 2018)
+- He (for each population: He1, He2): Calculated as with expected heterozygosity for diploids, but here is more appropriately refered to as 'gene diversity'. Calculates as 1.0-sum(Pi^2)
+- Ht, gene diversity calculated from the averaged frequencies of the 2 compared populations
+

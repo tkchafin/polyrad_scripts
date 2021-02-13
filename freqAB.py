@@ -4,7 +4,7 @@ import sys
 import os
 import getopt
 import pandas as pd
-
+import operator
 import polyStats as ps
 
 def main():
@@ -12,21 +12,12 @@ def main():
 	
 	popmap=parsePopmap(params.popmap)
 	
-	popdicts=getPopDicts(popmap, params.pop1, params.pop2, params.pop3)
+	popdicts=getPopDicts(popmap, params.pop1, params.pop2)
 	
 	name=list()
 	pos=list()
-	dxy=list()
-	dxo=list()
-	dyo=list()
-	rnd=list()
-	gpst=list()
-	jost=list()
-	HE1=list()
-	HE2=list()
-	HT=list()
-	isMon=list()
-	isBi=list()
+	fA=list()
+	fB=list()
 	
 	with open(params.vcf, "r") as vcf:
 		this_loc=None
@@ -59,61 +50,24 @@ def main():
 				
 				pi=getPis(gen)
 				
-				mon=ps.isMonomorphic(gen)
-				#print("Monomorphic?:",mon)
+				maxA = max(pi["pop1"].items(), key=operator.itemgetter(1))[0]
 				
-				bi=ps.isBiallelic(gen)
-				#print("Biallelic?:",bi)
+				#print(maxA)
+				afreq=pi["pop1"][maxA]
+				bfreq=0.0
+				if maxA in pi["pop2"].keys():
+					bfreq=pi["pop2"][maxA]
 				
-				# rh=ps.lnRH(pi["pop1"], pi["pop2"])
-				# print("lnRH:",rh)
-				
-				#calculate Dxy, Dxo, Dxy, RND(Dxy/mean(Dxo,Dxy))
-				Dxy=ps.Dxy(pi["pop1"], pi["pop2"])
-				#print("Dxy:",Dxy)
-				
-				Dxo=ps.Dxy(pi["pop1"], pi["out"])
-				#print("Dxo:",Dxo)
-				
-				Dyo=ps.Dxy(pi["pop2"], pi["out"])
-				#print("Dyo:",Dyo)
-				
-				if Dxo == 0.0 and Dyo==0.0:
-					RND=0.0
-				else:
-					RND=Dxy/((Dxo+Dyo)/2.0)
-				#print("RND:",RND)
-				
-				#G''st (Meirmans and Hedrick 2011)
-				Gst=ps.GppST(pi["pop1"], pi["pop2"])
-				#print("G''st:", Gst)
-				
-				#Dest (Jost 2008)
-				D=ps.JostD(pi["pop1"], pi["pop2"])
-				#print("D:",D)
-				
-				he1=ps.polyHe(pi["pop1"])
-				he2=ps.polyHe(pi["pop2"])
-				ht=ps.getHt(pi["pop1"], pi["pop2"])
+				fA.append(afreq)
+				fB.append(bfreq)
+
 				
 				name.append(locus)
 				pos.append(position)
-				gpst.append(Gst)
-				jost.append(D)
-				isMon.append(mon)
-				isBi.append(bi)
-				dxy.append(Dxy)
-				dxo.append(Dxo)
-				dyo.append(Dyo)
-				rnd.append(RND)
-				HE1.append(he1)
-				HE2.append(he2)
-				HT.append(ht)
+
 		vcf.close()
-	stuff = {'Locus': name, 'Position': pos, 'Gst': gpst,
-	'JostD': jost, 'Dxy': dxy, 'Dxo': dxo, 'Dyo': dyo,
-	'RND': rnd, 'He1': HE1, 'He2': HE2, 'Ht':HT,
-	 'Monomorphic':isMon, 'Biallelic':isBi}
+	stuff = {'Locus': name, 'Position': pos, 'FreqA': fA,
+	'FreqB': fB}
 	df = pd.DataFrame(stuff)
 	print(df)
 	df.to_csv(params.oname, sep="\t", header=True, index=False)  
@@ -142,26 +96,16 @@ def getGenotypes(fields, popdicts, sample_indices):
 	return(gen)
 	
 	
-def getPopDicts(popmap, pop1, pop2, pop3):
+def getPopDicts(popmap, pop1, pop2):
 	popdicts=dict()
 	pop2d=make2Dpopmap(popmap)
 	
 	popdicts["pop1"]=list()
 	popdicts["pop2"]=list()
-	popdicts["out"]=list()
 	for pop in pop1:
 		popdicts["pop1"].extend(pop2d[pop])
 	for pop in pop2:
 		popdicts["pop2"].extend(pop2d[pop])
-	
-	if pop3 is None:
-		#ge all pops not in pop1 or pop2
-		for pop in pop2d.keys():
-			if pop not in pop1 and pop not in pop2:
-				popdicts["out"].extend(pop2d[pop])
-	else:
-		for pop in pop3:
-			popdicts["out"].extend(pop2d[pop])
 
 	return(popdicts)
 
@@ -204,8 +148,8 @@ class parseArgs():
 	def __init__(self):
 		#Define options
 		try:
-			options, remainder = getopt.getopt(sys.argv[1:], 'h1:2:3:p:v:o:', \
-			["help", "popmap=", "vcf=", "pop1=", "pop2=", "pop3=", "oname="])
+			options, remainder = getopt.getopt(sys.argv[1:], 'h1:2:p:v:o:', \
+			["help", "popmap=", "vcf=", "pop1=", "pop2=", "oname="])
 		except getopt.GetoptError as err:
 			print(err)
 			self.display_help("\nExiting because getopt returned non-zero exit status.")
@@ -215,7 +159,6 @@ class parseArgs():
 		self.popmap=None
 		self.pop1=None
 		self.pop2=None
-		self.pop3=None
 		self.oname="out.tsv"
 
 
@@ -240,8 +183,6 @@ class parseArgs():
 				self.pop2=arg.split("+")
 			elif opt=="popmap" or opt=="p":
 				self.popmap=arg
-			elif opt=="pop3" or opt=="3":
-				self.pop3=arg.split("+")
 			elif opt=="o" or opt=="oname":
 				self.oname=arg
 			else:
@@ -261,19 +202,17 @@ class parseArgs():
 		if message is not None:
 			print()
 			print (message)
-		print ("\ncalGenStats.py\n")
+		print ("\nfreqAB.py\n")
 		print("Author: Tyler K Chafin, University of Arkansas")
 		print ("Contact: tkchafin@uark.edu")
-		print ("Description: Calculated RNDmin, Dxy, and lnRH from a polyVCF")
+		print ("Description: Calculates frequency of Population 1 major allele in Population 2")
 		print("""
 		-v,--vcf	: Input polyVCF file 
 		-p,--popmap	: Tab-delimitation population map file
 		-1,--pop1	: Identifier for population 1 
 			NOTE: multiple can be separated by + (e.g. popA+popB)
 		-2,--pop2	: Identifier for population 2
-		-3,--pop3	: (Optional) outgroup for RND
 		-o,--oname	: Output file name [default=out.tsv]
-			If no outgroups provided, script will use all other samples for RNDmin
 """)
 		print()
 		sys.exit()
